@@ -1,56 +1,43 @@
-image: python:3.8  
+image: python:3.8  # Nutzt das Python 3.8 Docker-Image
 
 stages:
   - build
-  - lint
   - test
   - deploy
 
-# Build-Job
+# Build Job (optional)
 build-job:
   stage: build
   script:
-    - echo "Building the Python project..."
-    - pip install -r requirements.txt || true  # Installiere Abhängigkeiten (falls vorhanden)
-    - echo "Build complete."
+    - echo "Compiling the code... (optional for Python projects)"
+    - echo "Compile complete."
 
-# Linting-Job
-lint-job:
-  stage: lint
-  script:
-    - echo "Linting the Python code..."
-    - pip install pylint  # Installiere pylint für Linting
-    - pylint calculator.py test_calculator.py  # Linting für Haupt- und Testdateien
-  allow_failure: true  # Linting-Fehler sollen den Build nicht stoppen
-  artifacts:
-    when: always
-    paths:
-      - pylint-report.txt  # Artefakt für den Linter-Report
-
-# Test-Job
+# Unit Test Job
 unit-test-job:
   stage: test
   script:
     - echo "Running unit tests..."
-    - python3 -m unittest test_calculator.py  # Führt die Unit-Tests aus
+    - cd python_Calculator  # Wechsel in das richtige Verzeichnis
+    - python3 -m unittest discover -s . -p "*.py"  # Führe alle Tests aus
+
+
+# Linting Job
+lint-job:
+  stage: test
+  script:
+    - echo "Running Linting..."
+    - cd python_Calculator  # Wechsel in das Verzeichnis, das deine Python-Dateien enthält
+    - pylint calculator.py test_calculator.py --output-format=text > pylint-report.txt  # Linting und Ausgabe
   artifacts:
     when: always
     paths:
-      - test-report.xml  # Artefakt für das Test-Resultat
-    reports:
-      junit: test-report.xml  # JUnit-Format für Testberichte
+      - python_Calculator/pylint-report.txt  # Stelle sicher, dass der Pfad korrekt ist
 
 
 
-
-
-
-
-# Deployment-Job
+# Deployment Job (optional)
 deploy-job:
   stage: deploy
-  environment: production
   script:
     - echo "Deploying application..."
     - echo "Application successfully deployed."
-
