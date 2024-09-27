@@ -84,3 +84,15 @@ docker-compose.yaml
 
 # Distribution
 dist/
+
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Test result reports
+test_results.out
+
+# Virtual environment
+venv/
