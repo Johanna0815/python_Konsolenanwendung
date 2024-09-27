@@ -1,0 +1,56 @@
+image: python:3.8  
+
+stages:
+  - build
+  - lint
+  - test
+  - deploy
+
+# Build-Job
+build-job:
+  stage: build
+  script:
+    - echo "Building the Python project..."
+    - pip install -r requirements.txt || true  # Installiere Abhängigkeiten (falls vorhanden)
+    - echo "Build complete."
+
+# Linting-Job
+lint-job:
+  stage: lint
+  script:
+    - echo "Linting the Python code..."
+    - pip install pylint  # Installiere pylint für Linting
+    - pylint calculator.py test_calculator.py  # Linting für Haupt- und Testdateien
+  allow_failure: true  # Linting-Fehler sollen den Build nicht stoppen
+  artifacts:
+    when: always
+    paths:
+      - pylint-report.txt  # Artefakt für den Linter-Report
+
+# Test-Job
+unit-test-job:
+  stage: test
+  script:
+    - echo "Running unit tests..."
+    - python3 -m unittest test_calculator.py  # Führt die Unit-Tests aus
+  artifacts:
+    when: always
+    paths:
+      - test-report.xml  # Artefakt für das Test-Resultat
+    reports:
+      junit: test-report.xml  # JUnit-Format für Testberichte
+
+
+
+
+
+
+
+# Deployment-Job
+deploy-job:
+  stage: deploy
+  environment: production
+  script:
+    - echo "Deploying application..."
+    - echo "Application successfully deployed."
+
