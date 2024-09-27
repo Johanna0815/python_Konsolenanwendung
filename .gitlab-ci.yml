@@ -21,10 +21,13 @@ unit-test-job:
     - python3 -m unittest discover -s . -p "*.py"  # Führe alle Tests aus
 
 
+
 # Linting Job
 lint-job:
   stage: test
   script:
+    - echo "Installing pylint..."
+    - pip install pylint  # Installiere pylint
     - echo "Running Linting..."
     - cd python_Calculator  # Wechsel in das Verzeichnis, das deine Python-Dateien enthält
     - pylint calculator.py test_calculator.py --output-format=text > pylint-report.txt  # Linting und Ausgabe
@@ -32,6 +35,8 @@ lint-job:
     when: always
     paths:
       - python_Calculator/pylint-report.txt  # Stelle sicher, dass der Pfad korrekt ist
+
+
 
 
 
