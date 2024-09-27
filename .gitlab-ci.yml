@@ -12,29 +12,40 @@ build-job:
     - echo "Compiling the code... (optional for Python projects)"
     - echo "Compile complete."
 
-# Unit Test Job
-unit-test-job:
+
+pytest:
   stage: test
   script:
-    - echo "Running unit tests..."
-    - cd python_Calculator  # Wechsel in das richtige Verzeichnis
-    - python3 -m unittest discover -s . -p "*.py"  # Führe alle Tests aus
-
-
-
-# Linting Job
-lint-job:
-  stage: test
-  script:
-    - echo "Installing pylint..."
-    - pip install pylint  # Installiere pylint
-    - echo "Running Linting..."
-    - cd python_Calculator  # Wechsel in das Verzeichnis, das deine Python-Dateien enthält
-    - pylint calculator.py test_calculator.py --output-format=text > pylint-report.txt  # Linting und Ausgabe
+    - pytest --junitxml=report.xml
   artifacts:
     when: always
-    paths:
-      - python_Calculator/pylint-report.txt  # Stelle sicher, dass der Pfad korrekt ist
+    reports:
+      junit: report.xml
+
+
+# # Unit Test Job
+# unit-test-job:
+#   stage: test
+#   script:
+#     - echo "Running unit tests..."
+#     - cd python_Calculator  # Wechsel in das richtige Verzeichnis
+#     - python3 -m unittest discover -s . -p "*.py"  # Führe alle Tests aus
+
+
+
+# # Linting Job
+# lint-job:
+#   stage: test
+#   script:
+#     - echo "Installing pylint..."
+#     - pip install pylint  # Installiere pylint
+#     - echo "Running Linting..."
+#     - cd python_Calculator  # Wechsel in das Verzeichnis, das deine Python-Dateien enthält
+#     - pylint calculator.py test_calculator.py --output-format=text > pylint-report.txt  # Linting und Ausgabe
+#   artifacts:
+#     when: always
+#     paths:
+#       - python_Calculator/pylint-report.txt  # Stelle sicher, dass der Pfad korrekt ist
 
 
 
