@@ -21,7 +21,7 @@ Python 3.8.10
 ## zum AUsführen der tests:
 
 
-````bash
+```bash
 cd python_Calculator
 
 python3 -m unittest test_calculator.py
