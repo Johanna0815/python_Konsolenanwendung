@@ -1,9 +1,17 @@
-image: python:3.8  # Nutzt das Python 3.8 Docker-Image
+image: docker:latest
+services:
+  - docker:dind
+
+variables:
+  DOCKER_HOST: tcp://docker:2375/
+  DOCKER_DRIVER: overlay2
+  DOCKER_TLS_CERTDIR: ""
 
 stages:
   - build
   - test
   - lint
+  - build_docker
   - snyk_test
   - deploy
 
@@ -41,29 +49,30 @@ lint-job:
     paths:
       - python_Calculator/pylint-report.txt  # Stelle sicher, dass der Pfad korrekt ist
 
-
-
+# Docker Build and Push
+build_docker_image:
+  stage: build_docker
+  script:
+    - docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+    - docker build -t johanna0815/my-snyk-test:latest .
+    - docker push johanna0815/my-snyk-test:latest
+  only:
+    - main
 
 # Snyk Security Test Job
 snyk_test_job:
   stage: snyk_test
-  image: snyk/snyk-cli:python-3.8
-  before_script:
-    - apt-get update && apt-get install -y nodejs npm
-    - npm install -g snyk
-    - snyk auth $SNYK_TOKEN
+  image: johanna0815/my-snyk-test:latest
   script:
-    - if [ -d "python_Calculator" ]; then cd python_Calculator; fi  # Überprüft, ob das Verzeichnis existiert, bevor es hinein gewechselt wird
-    - snyk test --file=requirements.txt  # Führt den Sicherheitscheck durch
+    - echo "Running Snyk security tests..."
+    - snyk auth $SNYK_TOKEN
+    - cd python_Calculator
+    - snyk test --file=requirements.txt
   only:
     - main
   variables:
     SNYK_TOKEN: $SNYK_TOKEN
-  allow_failure: true  # Erlaubt den Fortgang des Builds auch bei Fehlern
-
-
-
-
+  allow_failure: true
 
 # Deployment Job (optional)
 deploy-job:
