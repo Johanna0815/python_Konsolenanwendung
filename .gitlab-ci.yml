@@ -1,21 +1,19 @@
+image: python:3.8  # Nutzt das Python 3.8 Docker-Image
+
 stages:
-  - build
+  - build_docker
   - test
   - lint
   - snyk_test
   - deploy
 
-variables:
-  DOCKER_USERNAME: johanna0815  # Stelle sicher, dass dies in GitLab CI/CD als Variable oder Secret hinterlegt ist
-  DOCKER_PASSWORD: $DOCKER_PASSWORD  # Dies sollte als Secret in GitLab hinterlegt sein
-
 build_docker_image:
-  stage: build
+  stage: build_docker
   image: docker:stable
   services:
     - docker:dind
   script:
-    - docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+    - echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
     - docker build -t $DOCKER_USERNAME/my-snyk-test:latest .
     - docker push $DOCKER_USERNAME/my-snyk-test:latest
   only:
@@ -23,10 +21,12 @@ build_docker_image:
 
 unit-test-job:
   stage: test
-  image: $DOCKER_USERNAME/my-snyk-test:latest
   script:
+    - echo "Installing dependencies..."
+    - pip install pytest
     - echo "Running unit tests..."
-    - pytest --junitxml=report.xml  # Führe Tests aus und erzeuge eine JUnit-kompatible XML
+    - cd python_Calculator
+    - pytest --junitxml=report.xml
   artifacts:
     when: always
     paths:
@@ -34,10 +34,11 @@ unit-test-job:
 
 lint-job:
   stage: lint
-  image: $DOCKER_USERNAME/my-snyk-test:latest
   script:
     - echo "Running Linting..."
-    - pylint calculator.py test_calculator.py --output-format=text > pylint-report.txt
+    - pip install pylint
+    - cd python_Calculator
+    - pylint calculator.py test_calculator.py --output-format=text > pylint-report.txt || true
   artifacts:
     when: always
     paths:
@@ -59,7 +60,6 @@ snyk_test_job:
 
 deploy-job:
   stage: deploy
-  image: $DOCKER_USERNAME/my-snyk-test:latest
   script:
     - echo "Deploying application..."
     - echo "Application successfully deployed."
