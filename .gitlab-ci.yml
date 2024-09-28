@@ -47,14 +47,24 @@ snyk_test_job:
   image: snyk/snyk-cli:python-3.8  # Verwende das Snyk Python Docker Image
   script:
     - echo "Running Snyk security tests..."
-    - cd python_Calculator  
-    - snyk auth $SNYK_TOKEN  # Authentifiziere mit deinem Snyk Token
-    - snyk test --file=requirements.txt  # Führe den Sicherheitscheck für die Python-Abhängigkeiten durch
+    - snyk auth $SNYK_TOKEN  
+    - pwd  # Zeigt das aktuelle Verzeichnis an
+    - ls -la  # Zeigt den Inhalt des aktuellen Verzeichnisses
+    - cd python_Calculator  # Wechsle in das richtige Projektverzeichnis
+    - ls -la  # Zeigt den Inhalt des Verzeichnisses nach dem Wechsel
+    - snyk test --file=requirements.txt  # Führe den Sicherheitscheck durch
   only:
     - main  
   variables:
     SNYK_TOKEN: $SNYK_TOKEN
   allow_failure: true  # Lasse den Build weiterlaufen, auch wenn Sicherheitslücken gefunden werden
+
+
+
+
+
+
+
 
 # Deployment Job (optional)
 deploy-job:
