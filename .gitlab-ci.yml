@@ -47,9 +47,10 @@ snyk_test_job:
   image: snyk/snyk-cli:python-3.8  # Verwende das Snyk Python Docker Image
   script:
     - echo "Running Snyk security tests..."
-     - npm install -g snyk
+    - npm install -g snyk
+    - ls -la
     - snyk auth $SNYK_TOKEN  # Authentifiziere mit deinem Snyk Token
-  #   - cd python_Calculator  # Wechsle in das richtige Projektverzeichnis
+    - cd python_Calculator  # Wechsle in das richtige Projektverzeichnis
     - snyk monitor --project-name=$CI_PROJECT_NAME
     - snyk test --file=requirements.txt  # Führe den Sicherheitscheck durch
   only:
