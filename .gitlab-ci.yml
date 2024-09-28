@@ -1,73 +1,63 @@
-image: python:3.8  # Nutzt das Python 3.8 Docker-Image
+image: python:3.8
 
 stages:
   - build
   - test
   - lint
   - snyk_test
-  - deploy
+  - snyk_fix
 
-# Build Job (optional)
+# Build Job
 build-job:
   stage: build
   script:
-    - echo "Compiling the code... (optional for Python projects)"
-    - echo "Compile complete."
+    - python -m pip install --upgrade pip
+    - pip install -r python_Calculator/requirements.txt
 
 # Unit Test Job
 unit-test-job:
   stage: test
   script:
-    - echo "Installing dependencies..."
-    - pip install pytest  # Installiere pytest
-    - echo "Running unit tests..."
-     - cd python_Calculator  # Wechsel in das richtige Verzeichnis
-    - pytest --junitxml=report.xml  # Führe Tests aus und erzeuge eine JUnit-kompatible XML
+    - python -m pip install --upgrade pip
+    - pip install -r python_Calculator/requirements.txt
+    - python -m unittest discover -s python_Calculator
   artifacts:
     when: always
     paths:
-      - python_Calculator/report.xml  # Speichere den Testbericht
+      - python_Calculator/test_results.out
 
 # Linting Job
 lint-job:
   stage: lint
   script:
-    - echo "Running Linting..."
-    - pip install pylint  # Installiere pylint
-    - cd python_Calculator  # Wechsel in das Verzeichnis, das deine Python-Dateien enthält
-    - pylint calculator.py test_calculator.py --output-format=text > pylint-report.txt || true  # Linting und Ausgabe, aber ignoriere Fehler
-  artifacts:
-    when: always
-    paths:
-      - python_Calculator/pylint-report.txt  # Stelle sicher, dass der Pfad korrekt ist
+    - python -m pip install --upgrade pip
+    - pip install flake8
+    - flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+    - flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+  allow_failure: true  # Lässt den Build weiterlaufen, selbst wenn der Linting-Job Fehler findet
 
 # Snyk Security Test Job
 snyk_test_job:
   stage: snyk_test
   image: snyk/snyk-cli:python-3.8  # Verwende das Snyk Python Docker Image
   script:
-    - echo "Running Snyk security tests..."
-    - npm install -g snyk
-    - ls -la
-    - snyk auth $SNYK_TOKEN  # Authentifiziere mit deinem Snyk Token
-    - cd python_Calculator  # Wechsle in das richtige Projektverzeichnis
-    - snyk monitor --project-name=$CI_PROJECT_NAME
-    - snyk test --file=requirements.txt  # Führe den Sicherheitscheck durch
+    - snyk auth $SNYK_TOKEN
+    - snyk test --package-manager=pip --file=python_Calculator/requirements.txt --severity-threshold=medium
   only:
     - main  
   variables:
     SNYK_TOKEN: $SNYK_TOKEN
-  allow_failure: true  # Lasse den Build weiterlaufen, auch wenn Sicherheitslücken gefunden werden
+  allow_failure: true  # Lässt den Build weiterlaufen, selbst wenn Snyk Sicherheitslücken findet
 
-
-
-
-
-
-
-# Deployment Job (optional)
-deploy-job:
-  stage: deploy
+# Snyk Fix Job
+snyk_fix_job:
+  stage: snyk_fix
+  image: snyk/snyk-cli:python-3.8  # Verwende das Snyk Python Docker Image
   script:
-    - echo "Deploying application..."
-    - echo "Application successfully deployed."
+    - snyk auth $SNYK_TOKEN
+    - snyk fix --file=python_Calculator/requirements.txt --dry-run
+  only:
+    - main
+  variables:
+    SNYK_TOKEN: $SNYK_TOKEN
+  allow_failure: true  # Lässt den Build weiterlaufen, selbst wenn der Fix nicht angewendet wird
