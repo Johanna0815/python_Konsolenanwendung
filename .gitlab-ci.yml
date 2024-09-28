@@ -41,23 +41,29 @@ lint-job:
     paths:
       - python_Calculator/pylint-report.txt  # Stelle sicher, dass der Pfad korrekt ist
 
+
+
+
 # Snyk Security Test Job
 snyk_test_job:
   stage: snyk_test
-  image: snyk/snyk-cli:python-3.8  # Verwende das Snyk Python Docker Image
+  image: snyk/snyk-cli:python-3.8
   before_script:
-    - apt-get update && apt-get install -y nodejs npm  # Installiere Node.js und npm
-    - npm install -g snyk  # Installiere Snyk CLI
+    - apt-get update && apt-get install -y nodejs npm
+    - npm install -g snyk
+    - snyk auth $SNYK_TOKEN
   script:
-    - echo "Running Snyk security tests..."
-    - snyk auth $SNYK_TOKEN  # Authentifiziere mit deinem Snyk Token
-    - cd python_Calculator  # Wechsle in das richtige Projektverzeichnis
-    - snyk test --file=requirements.txt  # Führe den Sicherheitscheck durch
+    - if [ -d "python_Calculator" ]; then cd python_Calculator; fi  # Überprüft, ob das Verzeichnis existiert, bevor es hinein gewechselt wird
+    - snyk test --file=requirements.txt  # Führt den Sicherheitscheck durch
   only:
-    - main  
+    - main
   variables:
     SNYK_TOKEN: $SNYK_TOKEN
-  allow_failure: true  # Lasse den Build weiterlaufen, auch wenn Sicherheitslücken gefunden werden
+  allow_failure: true  # Erlaubt den Fortgang des Builds auch bei Fehlern
+
+
+
+
 
 # Deployment Job (optional)
 deploy-job:
