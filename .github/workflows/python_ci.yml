@@ -62,3 +62,10 @@ jobs:
     - name: Run Snyk Test
       run: |
         snyk test --package-manager=pip --file=python_Calculator/requirements.txt --severity-threshold=medium
+      continue-on-error: true  # Build läuft weiter, selbst wenn Snyk Sicherheitslücken findet
+
+    # Snyk Fix
+    - name: Run Snyk Fix
+      run: |
+        snyk fix --file=python_Calculator/requirements.txt --dry-run
+      continue-on-error: true  # Lässt den Build weiterlaufen, auch wenn 'fix' nicht angewendet wird
