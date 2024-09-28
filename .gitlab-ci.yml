@@ -45,10 +45,11 @@ lint-job:
 snyk_test_job:
   stage: snyk_test
   image: snyk/snyk-cli:python-3.8  # Verwende das Snyk Python Docker Image
-  script:
-    - echo "Running Snyk security tests..."
+  before_script:
     - apt-get update && apt-get install -y nodejs npm  # Installiere Node.js und npm
     - npm install -g snyk  # Installiere Snyk CLI
+  script:
+    - echo "Running Snyk security tests..."
     - snyk auth $SNYK_TOKEN  # Authentifiziere mit deinem Snyk Token
     - cd python_Calculator  # Wechsle in das richtige Projektverzeichnis
     - snyk test --file=requirements.txt  # Führe den Sicherheitscheck durch
