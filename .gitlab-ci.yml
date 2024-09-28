@@ -3,6 +3,8 @@ image: python:3.8  # Nutzt das Python 3.8 Docker-Image
 stages:
   - build
   - test
+  - lint
+  - snyk_test
   - deploy
 
 # Build Job (optional)
@@ -26,11 +28,9 @@ unit-test-job:
     paths:
       - python_Calculator/report.xml  # Speichere den Testbericht
 
-
-
 # Linting Job
 lint-job:
-  stage: test
+  stage: lint
   script:
     - echo "Running Linting..."
     - pip install pylint  # Installiere pylint
@@ -41,6 +41,19 @@ lint-job:
     paths:
       - python_Calculator/pylint-report.txt  # Stelle sicher, dass der Pfad korrekt ist
 
+# Snyk Security Test Job
+snyk_test_job:
+  stage: snyk_test
+  image: snyk/snyk-cli:python-3.8  # Verwende das Snyk Python Docker Image
+  script:
+    - echo "Running Snyk security tests..."
+    - snyk auth $SNYK_TOKEN  # Authentifiziere mit deinem Snyk Token
+    - snyk test --file=requirements.txt  # Führe den Sicherheitscheck für die Python-Abhängigkeiten durch
+  only:
+    - main  # Optional: Nur auf dem Hauptbranch ausführen
+  variables:
+    SNYK_TOKEN: $SNYK_TOKEN
+  allow_failure: true  # Lasse den Build weiterlaufen, auch wenn Sicherheitslücken gefunden werden
 
 # Deployment Job (optional)
 deploy-job:
@@ -48,4 +61,3 @@ deploy-job:
   script:
     - echo "Deploying application..."
     - echo "Application successfully deployed."
-
