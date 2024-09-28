@@ -1,4 +1,5 @@
-image: docker:latest
+image: python:3.8
+
 services:
   - docker:dind
 
@@ -51,7 +52,10 @@ lint-job:
 
 # Docker Build and Push
 build_docker_image:
+  image: docker:latest
   stage: build_docker
+  services:
+    - docker:dind
   script:
     - docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
     - docker build -t johanna0815/my-snyk-test:latest .
