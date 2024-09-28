@@ -1,72 +1,51 @@
-image: python:3.8
-
-services:
-  - docker:dind
-
-variables:
-  DOCKER_HOST: tcp://docker:2375/
-  DOCKER_DRIVER: overlay2
-  DOCKER_TLS_CERTDIR: ""
-
 stages:
   - build
   - test
   - lint
-  - build_docker
   - snyk_test
   - deploy
 
-# Build Job (optional)
-build-job:
-  stage: build
-  script:
-    - echo "Compiling the code... (optional for Python projects)"
-    - echo "Compile complete."
+variables:
+  DOCKER_USERNAME: johanna0815  # Stelle sicher, dass dies in GitLab CI/CD als Variable oder Secret hinterlegt ist
+  DOCKER_PASSWORD: $DOCKER_PASSWORD  # Dies sollte als Secret in GitLab hinterlegt sein
 
-# Unit Test Job
-unit-test-job:
-  stage: test
-  script:
-    - echo "Installing dependencies..."
-    - pip install pytest  # Installiere pytest
-    - echo "Running unit tests..."
-    - cd python_Calculator  # Wechsel in das richtige Verzeichnis
-    - pytest --junitxml=report.xml  # Führe Tests aus und erzeuge eine JUnit-kompatible XML
-  artifacts:
-    when: always
-    paths:
-      - python_Calculator/report.xml  # Speichere den Testbericht
-
-# Linting Job
-lint-job:
-  stage: lint
-  script:
-    - echo "Running Linting..."
-    - pip install pylint  # Installiere pylint
-    - cd python_Calculator  # Wechsel in das Verzeichnis, das deine Python-Dateien enthält
-    - pylint calculator.py test_calculator.py --output-format=text > pylint-report.txt || true  # Linting und Ausgabe, aber ignoriere Fehler
-  artifacts:
-    when: always
-    paths:
-      - python_Calculator/pylint-report.txt  # Stelle sicher, dass der Pfad korrekt ist
-
-# Docker Build and Push
 build_docker_image:
-  image: docker:latest
-  stage: build_docker
+  stage: build
+  image: docker:stable
   services:
     - docker:dind
   script:
     - docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
-    - docker build -t johanna0815/my-snyk-test:latest .
-    - docker push johanna0815/my-snyk-test:latest
+    - docker build -t $DOCKER_USERNAME/my-snyk-test:latest .
+    - docker push $DOCKER_USERNAME/my-snyk-test:latest
   only:
     - main
 
-# Snyk Security Test Job
+unit-test-job:
+  stage: test
+  image: $DOCKER_USERNAME/my-snyk-test:latest
+  script:
+    - echo "Running unit tests..."
+    - pytest --junitxml=report.xml  # Führe Tests aus und erzeuge eine JUnit-kompatible XML
+  artifacts:
+    when: always
+    paths:
+      - python_Calculator/report.xml
+
+lint-job:
+  stage: lint
+  image: $DOCKER_USERNAME/my-snyk-test:latest
+  script:
+    - echo "Running Linting..."
+    - pylint calculator.py test_calculator.py --output-format=text > pylint-report.txt
+  artifacts:
+    when: always
+    paths:
+      - python_Calculator/pylint-report.txt
+
 snyk_test_job:
   stage: snyk_test
-  image: johanna0815/my-snyk-test:latest
+  image: $DOCKER_USERNAME/my-snyk-test:latest
   script:
     - echo "Running Snyk security tests..."
     - snyk auth $SNYK_TOKEN
@@ -78,9 +57,9 @@ snyk_test_job:
     SNYK_TOKEN: $SNYK_TOKEN
   allow_failure: true
 
-# Deployment Job (optional)
 deploy-job:
   stage: deploy
+  image: $DOCKER_USERNAME/my-snyk-test:latest
   script:
     - echo "Deploying application..."
     - echo "Application successfully deployed."
