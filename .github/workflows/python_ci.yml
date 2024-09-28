@@ -29,9 +29,7 @@ jobs:
     - name: Lint with flake8
       run: |
         pip install flake8
-        # Stop the build if there are Python syntax errors or undefined names
         flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-        # Exit with status code "1" if there are any style violations
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
 
     - name: Run Unit Tests
@@ -44,6 +42,12 @@ jobs:
         name: test-results
         path: python_Calculator/test_results.out
 
+    # Install Node.js (falls nicht bereits vorhanden)
+    - name: Install Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '16.x'
+
     # Snyk Security Test
     - name: Install Snyk CLI
       run: |
@@ -55,4 +59,4 @@ jobs:
 
     - name: Run Snyk Test
       run: |
-        snyk test --file=python_Calculator/requirements.txt --severity-threshold=medium
+        snyk test --package-manager=pip --file=python_Calculator/requirements.txt --severity-threshold=medium
