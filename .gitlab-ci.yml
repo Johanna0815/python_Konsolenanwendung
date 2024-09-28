@@ -21,7 +21,7 @@ unit-test-job:
     - echo "Installing dependencies..."
     - pip install pytest  # Installiere pytest
     - echo "Running unit tests..."
-    - cd python_Calculator  # Wechsel in das richtige Verzeichnis
+     - cd python_Calculator  # Wechsel in das richtige Verzeichnis
     - pytest --junitxml=report.xml  # Führe Tests aus und erzeuge eine JUnit-kompatible XML
   artifacts:
     when: always
@@ -47,14 +47,22 @@ snyk_test_job:
   image: snyk/snyk-cli:python-3.8  # Verwende das Snyk Python Docker Image
   script:
     - echo "Running Snyk security tests..."
-    - cd python_Calculator  
+     - npm install -g snyk
     - snyk auth $SNYK_TOKEN  # Authentifiziere mit deinem Snyk Token
-    - snyk test --file=requirements.txt  # Führe den Sicherheitscheck für die Python-Abhängigkeiten durch
+  #   - cd python_Calculator  # Wechsle in das richtige Projektverzeichnis
+    - snyk monitor --project-name=$CI_PROJECT_NAME
+    - snyk test --file=requirements.txt  # Führe den Sicherheitscheck durch
   only:
     - main  
   variables:
     SNYK_TOKEN: $SNYK_TOKEN
   allow_failure: true  # Lasse den Build weiterlaufen, auch wenn Sicherheitslücken gefunden werden
+
+
+
+
+
+
 
 # Deployment Job (optional)
 deploy-job:
