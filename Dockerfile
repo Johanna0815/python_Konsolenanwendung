@@ -20,5 +20,5 @@ RUN apt-get update && apt-get install -y curl && \
 RUN python3 -m pip install --upgrade pip && \
     pip install -r python_Calculator/requirements.txt
 
-# Setze das Startkommando
+# Setze das Startkommando auf Bash, damit die Shell geöffnet wird, wenn der Container läuft
 CMD ["bash"]
