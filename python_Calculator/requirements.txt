@@ -1,0 +1,8 @@
+# Web Framework
+flask==2.0.1
+
+# HTTP Library
+requests==2.25.1
+
+# Test Framework
+pytest==6.2.4
