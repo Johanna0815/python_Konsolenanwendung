@@ -50,7 +50,7 @@ snyk_test_job:
     - snyk auth $SNYK_TOKEN  # Authentifiziere mit deinem Snyk Token
     - snyk test --file=requirements.txt  # Führe den Sicherheitscheck für die Python-Abhängigkeiten durch
   only:
-    - main  # Optional: Nur auf dem Hauptbranch ausführen
+    - main  
   variables:
     SNYK_TOKEN: $SNYK_TOKEN
   allow_failure: true  # Lasse den Build weiterlaufen, auch wenn Sicherheitslücken gefunden werden
