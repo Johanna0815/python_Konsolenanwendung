@@ -1,8 +1,12 @@
 # Web Framework
-flask==2.0.1
+flask==2.2.5 # bad example for test ^^
 
 # HTTP Library
-requests==2.25.1
+requests==2.32.2
 
 # Test Framework
 pytest==6.2.4
+
+idna==3.7
+pytest
+pylint
