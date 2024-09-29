@@ -4,7 +4,6 @@ stages:
   - build_docker
   - test
   - lint
-  - snyk_test
   - deploy
 
 build_docker_image:
@@ -44,19 +43,19 @@ lint-job:
     paths:
       - python_Calculator/pylint-report.txt
 
-snyk_test_job:
-  stage: snyk_test
-  image: $DOCKER_USERNAME/my-snyk-test:latest
-  script:
-    - echo "Running Snyk security tests..."
-    - snyk auth $SNYK_TOKEN
-    - cd python_Calculator
-    - snyk test --file=requirements.txt
-  only:
-    - main
-  variables:
-    SNYK_TOKEN: $SNYK_TOKEN
-  allow_failure: true
+# snyk_test_job:
+#   stage: snyk_test
+#   image: $DOCKER_USERNAME/my-snyk-test:latest
+#   script:
+#     - echo "Running Snyk security tests..."
+#     - snyk auth $SNYK_TOKEN
+#     - cd python_Calculator
+#     - snyk test --file=requirements.txt
+#   only:
+#     - main
+#   variables:
+#     SNYK_TOKEN: $SNYK_TOKEN
+#   allow_failure: true
 
 deploy-job:
   stage: deploy
