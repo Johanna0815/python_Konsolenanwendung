@@ -10,30 +10,33 @@ build-job:
   stage: build
   script:
     - echo "Building application..."
-    - pip install -r requirements.txt  # Adjust if your build process involves more steps
+    - cd python_Calculator
+    - pip install -r requirements.txt  # Anforderungen installieren
 
 unit-test-job:
   stage: test
   script:
     - echo "Installing dependencies..."
+    - cd python_Calculator
     - pip install pytest
     - echo "Running unit tests..."
     - pytest --junitxml=report.xml
   artifacts:
     when: always
     paths:
-      - report.xml
+      - python_Calculator/report.xml
 
 lint-job:
   stage: lint
   script:
     - echo "Running Linting..."
+    - cd python_Calculator
     - pip install pylint
-    - pylint *.py --output-format=text > pylint-report.txt || true  # Adjust to include your project files
+    - pylint calculator.py test_calculator.py --output-format=text > pylint-report.txt || true
   artifacts:
     when: always
     paths:
-      - pylint-report.txt
+      - python_Calculator/pylint-report.txt
 
 deploy-job:
   stage: deploy
