@@ -1,22 +1,16 @@
 image: python:3.8  # Nutzt das Python 3.8 Docker-Image
 
 stages:
-  - build_docker
+  - build
   - test
   - lint
   - deploy
 
-build_docker_image:
-  stage: build_docker
-  image: docker:stable
-  services:
-    - docker:dind
+build-job:
+  stage: build
   script:
-    - echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
-    - docker build -t $DOCKER_USERNAME/my-snyk-test:latest .
-    - docker push $DOCKER_USERNAME/my-snyk-test:latest
-  only:
-    - main
+    - echo "Building application..."
+    - pip install -r requirements.txt  # Adjust if your build process involves more steps
 
 unit-test-job:
   stage: test
@@ -24,38 +18,22 @@ unit-test-job:
     - echo "Installing dependencies..."
     - pip install pytest
     - echo "Running unit tests..."
-    - cd python_Calculator
     - pytest --junitxml=report.xml
   artifacts:
     when: always
     paths:
-      - python_Calculator/report.xml
+      - report.xml
 
 lint-job:
   stage: lint
   script:
     - echo "Running Linting..."
     - pip install pylint
-    - cd python_Calculator
-    - pylint calculator.py test_calculator.py --output-format=text > pylint-report.txt || true
+    - pylint *.py --output-format=text > pylint-report.txt || true  # Adjust to include your project files
   artifacts:
     when: always
     paths:
-      - python_Calculator/pylint-report.txt
-
-# snyk_test_job:
-#   stage: snyk_test
-#   image: $DOCKER_USERNAME/my-snyk-test:latest
-#   script:
-#     - echo "Running Snyk security tests..."
-#     - snyk auth $SNYK_TOKEN
-#     - cd python_Calculator
-#     - snyk test --file=requirements.txt
-#   only:
-#     - main
-#   variables:
-#     SNYK_TOKEN: $SNYK_TOKEN
-#   allow_failure: true
+      - pylint-report.txt
 
 deploy-job:
   stage: deploy

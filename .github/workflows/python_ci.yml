@@ -9,7 +9,7 @@ on:
       - main
 
 jobs:
-  build:
+  build-and-test:
     runs-on: ubuntu-latest
 
     steps:
@@ -26,12 +26,6 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r python_Calculator/requirements.txt
 
-    - name: Lint with flake8
-      run: |
-        pip install flake8
-        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
-
     - name: Run Unit Tests
       run: |
         python -m unittest discover -s python_Calculator
@@ -42,30 +36,8 @@ jobs:
         name: test-results
         path: python_Calculator/test_results.out
 
-    # Install Node.js
-    - name: Install Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: '18.x'
-
-    # Snyk Security Test
-    - name: Install Snyk CLI
+    - name: Lint with flake8
       run: |
-        npm install -g snyk
-
-    - name: Authenticate Snyk
-      env:
-        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-      run: |
-        snyk auth $SNYK_TOKEN
-
-    - name: Run Snyk Test
-      run: |
-        snyk test --package-manager=pip --file=python_Calculator/requirements.txt --severity-threshold=medium
-      continue-on-error: true  # Build läuft weiter, selbst wenn Snyk Sicherheitslücken findet
-
-    # Snyk Fix
-    - name: Run Snyk Fix
-      run: |
-        snyk fix --file=python_Calculator/requirements.txt --dry-run
-      continue-on-error: true  # Lässt den Build weiterlaufen, auch wenn 'fix' nicht angewendet wird
+        pip install flake8
+        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
