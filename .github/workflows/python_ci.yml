@@ -65,7 +65,7 @@ jobs:
         path: python_Calculator/report.xml
 
   lint:
-    needs: build
+    needs: test
     runs-on: ubuntu-20.04
     container:
       image: python:3.8
